@@ -9,21 +9,22 @@ screenHeight = 500
 screen = pygame.display.set_mode((screenWidth, screenHeight))
 pygame.display.set_caption('Space Invaders')
 
-background = pygame.image.load('space invaders.jpeg')
+background_img = pygame.image.load('space invaders.jpeg')
+background = pygame.transform.scale(background_img, (screenWidth, screenHeight))
 playerIMG = pygame.image.load('player.png')
 enemyIMG_FILE = 'enemy-removebg-preview.png'
 bulletIMG = pygame.image.load('bullet-removebg-preview.png')
 
-playerSpawnX = 600
-playerSpawnY = 600
+playerSpawnX = 368
+playerSpawnY = 420
 playerX = playerSpawnX
 playerY = playerSpawnY
 playerX_change = 0
 
 enemySpawnXmin = 50
-enemySpawnXmax = 1200
-enemySpawnYmin = 50
-enemySpawnYmax = 200
+enemySpawnXmax = 736
+enemySpawnYmin = 10
+enemySpawnYmax = 100
 enemySpeedX = 5
 enemySpeedY = 40
 num_of_enemies = 7
@@ -46,8 +47,9 @@ bulletY = playerSpawnY
 bulletY_change = 10
 bullet_state = 'ready'
 
-collisionDistance = 27
+collisionDistance = 15
 score = 0
+game_over = False
 
 font = pygame.font.Font('Audiowide-regular.ttf', 32)
 textX = 10
@@ -109,13 +111,13 @@ while running:
                 playerX_change = 0
 
     playerX += playerX_change
-    playerX = max(0, min(playerX, screenWidth - 32))
+    playerX = max(0, min(playerX, screenWidth - 64))
 
     for i in range(num_of_enemies):
         if enemyY[i] > 440:
             for j in range(num_of_enemies):
                 enemyY[j] = 2000
-            game_over_text()
+            game_over = True
             break
 
         enemyX[i] += enemyX_change[i]
@@ -123,13 +125,14 @@ while running:
             enemyX_change[i] *= -1
             enemyY[i] += enemyY_change[i]
 
-        collision = isCollision(enemyX[i], enemyY[i], bulletX, bulletY)
-        if collision:
-            bulletY = playerSpawnY
-            bullet_state = 'ready'
-            score += 1
-            enemyX[i] = random.randint(enemySpawnXmin, enemySpawnXmax)
-            enemyY[i] = random.randint(enemySpawnYmin, enemySpawnYmax)
+        if bullet_state == 'fire':
+            collision = isCollision(enemyX[i], enemyY[i], bulletX + 16, bulletY + 10)
+            if collision:
+                bulletY = playerSpawnY
+                bullet_state = 'ready'
+                score += 1
+                enemyX[i] = random.randint(enemySpawnXmin, enemySpawnXmax)
+                enemyY[i] = random.randint(enemySpawnYmin, enemySpawnYmax)
 
         enemy(enemyX[i], enemyY[i], i)
 
@@ -143,6 +146,8 @@ while running:
 
     player(playerX, playerY)
     show_score(textX, textY)
+    if game_over:
+        game_over_text()
     pygame.display.update()
     clock.tick(60)
 pygame.quit()
